@@ -1,0 +1,45 @@
+-  1  -    Req. Gathering
+
+Create an account
+Login
+Update your profile
+Feed page - explore
+Send Connection Rqurest
+See our matches
+See the request we have sent
+
+-  2  -
+Tech Planning
+FE
+BE -> NodeJs, MongoDB
+
+Once the techstack is finalized, devs come into picture, but they first plan then code
+LLD -> DB Design -> decide collections
+            =>User 
+                -> firstName, lastName, email, gender, password, age 
+            
+            (for storage of connection requsets)
+            => connectionRequests
+                -> fromUserId
+                -> toUserId
+                -> status (pending, accepted, rejexted, Ignored) 
+            
+    -> API Design
+        -> REST API
+            => GET
+            => POST
+            => PUT
+            => PATCH
+            => DELETE
+        -> APIs
+            => post signUp
+            => POST login
+            => GET /profile
+            => POST /profile
+            => PATCH /profile
+            => DELETE /profile
+            => POST /sendRequest -> ignore
+                                 -> interested
+            => POST /reviewRequest
+            => GET /requests
+            => GET /connections
