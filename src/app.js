@@ -3,6 +3,8 @@ const express = require("express");
 //instance of an express js application
 const app = express();
 
+app.set;
+
 //request handler function
 app.use("/test", (req, res) => {
   res.send("Hello from the server!");
