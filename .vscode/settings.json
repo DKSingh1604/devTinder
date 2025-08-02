@@ -1,0 +1,5 @@
+{
+    "editor.tokenColorCustomizations": {
+        "comments": "#ff6a00" // Replace with your desired color
+    }
+}
