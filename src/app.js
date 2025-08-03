@@ -40,10 +40,11 @@ app.get("/abc", (req, res) => {
 
 app.use(
   "/user",
-  (req, res) => {
+  (req, res, next) => {
     //route handler 1
     console.log("Route handled for 1");
-    res.send("API route handled for 1");
+    next();
+    // res.send("API route handled for 1");
   },
   (req, res) => {
     //route handler 2
@@ -62,3 +63,9 @@ app.listen(3000, () => {
     "Server is listening on port 3000......"
   );
 });
+
+/*
+next() is a function given to us by express that is used to pass control to the next middleware function in the stack.
+
+should not use res.send() and then next() together in the same route handler, as it will lead to an error because the response has already been sent to the client.
+*/
