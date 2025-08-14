@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 //IF YOU ADD A VALIDATION HERE THAT'S CALLED A SCHEMA/DB LEVEL VALIDAITON
 const userSchema = new mongoose.Schema(
   {
@@ -52,6 +54,33 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.methods.getJWT = async function () {
+  const user = this;
+
+  const token = await jwt.sign(
+    { _id: userSchema._id },
+    "DEV@Tinder$790",
+    {
+      expiresIn: "7d",
+    }
+  );
+
+  return token;
+};
+
+userSchema.methods.validatePassword =
+  async function (passwordInputByUser) {
+    const user = this;
+    const passwordHash = user.password;
+
+    const isPasswordValid = await bcrypt.compare(
+      passwordInputByUser,
+      passwordHash
+    );
+
+    return isPasswordValid;
+  };
 
 module.exports = mongoose.model(
   "User",
