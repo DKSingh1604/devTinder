@@ -44,7 +44,7 @@ const validateSignUpData = (req) => {
     throw new Error("Email is not valid!");
   }
 
-  //Email related validations
+  //Password related validations
   if (!validator.isStrongPassword(password)) {
     throw new Error(
       "The Password is not strong!"
