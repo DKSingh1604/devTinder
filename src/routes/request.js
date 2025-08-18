@@ -3,24 +3,75 @@ const requestRouter = express.Router();
 const {
   userAuth,
 } = require("../middlewares/auth");
+const ConnectionRequest = require("../models/connectionRequest");
+const User = require("../models/user");
 
 //send connection API
 requestRouter.post(
-  "/sendConnectionRequest",
+  "/request/send/:status/:toUserId",
   userAuth,
   async (req, res) => {
     try {
-      const user = req.user;
-      //logic of sending a connection request.....
-      console.log(
-        "Sending a connection request."
-      );
+      const firstName = req.user.firstName;
+      const fromUserId = req.user._id;
+      const toUserId = req.params.toUserId;
+      const status = req.params.status;
 
-      res.send(
-        `${user.firstName} sent the connection request.`
+      //Status validation
+      const allowedStatus = [
+        "ignored",
+        "interested",
+      ];
+      if (!allowedStatus.includes(status)) {
+        return res.json({
+          message: `${status} is an invalid status type.`,
+        });
+      }
+
+      const toUserExists = await User.findById(
+        toUserId
       );
+      if (!toUserExists) {
+        return res.status(400).json({
+          message: `Can't find user with that id.`,
+        });
+      }
+
+      //If there is an existing connection request
+      const existingConnectionRequest =
+        await ConnectionRequest.findOne({
+          $or: [
+            { fromUserId, toUserId },
+            {
+              fromUserId: toUserId,
+              toUserId: fromUserId,
+            },
+          ],
+        });
+      if (existingConnectionRequest) {
+        return res.status(400).send({
+          message:
+            "Connection request already sent!",
+        });
+      }
+
+      const connectionRequest =
+        new ConnectionRequest({
+          fromUserId,
+          toUserId,
+          status,
+        });
+
+      const data = await connectionRequest.save();
+
+      res.json({
+        message: `${firstName} sent the connection request.`,
+        data: data,
+      });
     } catch (error) {
-      res.status(400).send(`ERROR: ${error}`);
+      res
+        .status(400)
+        .send(`ERROR: ${error.message}`);
     }
   }
 );
