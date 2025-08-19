@@ -55,6 +55,12 @@ requestRouter.post(
         });
       }
 
+      //fetch the firstName from toUserId
+      const toUserfirstName =
+        toUserExists.firstName;
+      const toUserlastName =
+        toUserExists.lastName;
+
       const connectionRequest =
         new ConnectionRequest({
           fromUserId,
@@ -65,7 +71,7 @@ requestRouter.post(
       const data = await connectionRequest.save();
 
       res.json({
-        message: `${firstName} sent the connection request.`,
+        message: `Connection request was sent to ${toUserfirstName} ${toUserlastName}.`,
         data: data,
       });
     } catch (error) {
