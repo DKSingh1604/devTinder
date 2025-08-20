@@ -6,7 +6,7 @@ const {
 const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
 
-//send connection API
+//POST - send connection API
 requestRouter.post(
   "/request/send/:status/:toUserId",
   userAuth,
@@ -73,6 +73,55 @@ requestRouter.post(
       res.json({
         message: `Connection request was sent to ${toUserfirstName} ${toUserlastName}.`,
         data: data,
+      });
+    } catch (error) {
+      res
+        .status(400)
+        .send(`ERROR: ${error.message}`);
+    }
+  }
+);
+
+requestRouter.post(
+  "/request/review/:status/:requestId",
+  userAuth,
+  async (req, res) => {
+    try {
+      const loggedInUser = req.user;
+      const { status, requestId } = req.params;
+
+      //Validating the status
+      const allowedStatus = [
+        "accepted",
+        "rejected",
+      ];
+      if (!allowedStatus.includes(status)) {
+        return res.status(400).json({
+          message: "Invalid request status!",
+        });
+      }
+
+      const connectionRequest =
+        await ConnectionRequest.findOne({
+          _id: requestId,
+          toUserId: loggedInUser._id,
+          status: "interested",
+        });
+
+      if (!connectionRequest) {
+        return res.status(404).json({
+          message:
+            "Connection Request is not valid!",
+        });
+      }
+
+      connectionRequest.status = status;
+
+      const data = await connectionRequest.save();
+
+      res.json({
+        message: `Connection Request ${status}.`,
+        data,
       });
     } catch (error) {
       res
