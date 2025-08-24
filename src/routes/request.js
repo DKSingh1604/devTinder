@@ -71,7 +71,7 @@ requestRouter.post(
       const data = await connectionRequest.save();
 
       res.json({
-        message: `Connection request was sent to ${toUserfirstName} ${toUserlastName}.`,
+        message: `${firstName}'s connection request was sent to ${toUserfirstName} ${toUserlastName}.`,
         data: data,
       });
     } catch (error) {
@@ -82,6 +82,7 @@ requestRouter.post(
   }
 );
 
+//POST - accept/reject connection API
 requestRouter.post(
   "/request/review/:status/:requestId",
   userAuth,
