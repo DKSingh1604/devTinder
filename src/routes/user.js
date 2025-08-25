@@ -4,8 +4,9 @@ const {
 } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequest");
 const userRouter = express.Router();
+const User = require("../models/user");
 
-//GET all the received pending connection requests for the logged in user
+//GET - all the received pending connection requests for the logged in user
 userRouter.get(
   "/user/requests/received",
   userAuth,
@@ -117,4 +118,76 @@ userRouter.get(
   }
 );
 
+//GET - the user feed
+userRouter.get(
+  "/feed",
+  userAuth,
+  async (req, res) => {
+    try {
+      //for the current user, show all the people who are
+      //-> not marked as ignored/interested or accepted/rejected
+      //-> not the user himself
+
+      const loggedInUser = req.user;
+      //params -> :status        query -> ?page=1
+      const page = parseInt(req.query.page) || 1;
+      let limit = parseInt(req.query.limit) || 10;
+      limit = limit > 50 ? 50 : limit;
+      const skip = (page - 1) * limit;
+
+      //find all the connection requests (sent + received)
+      const connectionRequests =
+        await ConnectionRequest.find({
+          $or: [
+            { fromUserId: loggedInUser._id },
+            { toUserId: loggedInUser._id },
+          ],
+        }).select("fromUserId toUserId");
+
+      const hideUserFromFeed = new Set();
+
+      connectionRequests.forEach((req) => {
+        hideUserFromFeed.add(
+          req.fromUserId.toString()
+        );
+        hideUserFromFeed.add(
+          req.toUserId.toString()
+        );
+      });
+
+      const user = await User.find({
+        $and: [
+          {
+            _id: {
+              $nin: Array.from(hideUserFromFeed),
+            },
+          },
+          {
+            _id: {
+              $ne: loggedInUser._id,
+            },
+          },
+        ],
+      })
+        .select(
+          "firstName lastName age gender photoUrl skills about"
+        )
+        .skip(skip)
+        .limit(limit);
+
+      if (!user) {
+        res.json({ message: "No user found!" });
+      }
+
+      res.json({
+        message: `You have ${user.length} users in your feed.`,
+        data: user,
+      });
+    } catch (error) {
+      res
+        .status(400)
+        .send(`ERROR: ${error.message}`);
+    }
+  }
+);
 module.exports = userRouter;
